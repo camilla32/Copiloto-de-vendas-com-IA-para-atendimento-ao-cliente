@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FYS Scout AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: #121916;
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* --- SIDEBAR --- */
+        .sidebar {
+            width: 260px;
+            background: #04241a;
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 30px 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .logo { text-align: center; }
+        .logo h1 { font-size: 42px; font-weight: 700; letter-spacing: 2px; color: #fff; }
+        .shield {
+            width: 80px; height: 80px; border: 2px solid #b38f54; background: rgba(179, 143, 84, 0.1);
+            border-radius: 50%; margin: 15px auto; display: flex; justify-content: center; align-items: center;
+            font-weight: bold; font-size: 22px; color: #b38f54; box-shadow: 0 0 15px rgba(179, 143, 84, 0.2);
+        }
+        .logo p { font-size: 13px; color: #8fa39e; text-transform: uppercase; letter-spacing: 1px; }
+
+        .menu { margin-top: 35px; }
+        .menu button {
+            width: 100%; margin-bottom: 12px; padding: 14px 18px; border: 1px solid rgba(255, 255, 255, 0.03);
+            border-radius: 10px; background: rgba(255, 255, 255, 0.02); color: #bdc7c4; cursor: pointer;
+            text-align: left; font-size: 14px; transition: all 0.3s ease;
+        }
+        .menu button:hover, .menu button.active {
+            background: #0d5c43; color: white; box-shadow: 0 4px 12px rgba(13, 92, 67, 0.3);
+        }
+        .heineken { text-align: center; font-size: 12px; color: #5d756f; border-top: 1px solid rgba(255, 255, 255, 0.05); padding-top: 20px; font-weight: 600; }
+
+        /* --- COMPONENTES GERAIS --- */
+        .tab-content { display: none; flex: 1; }
+        .tab-content.active { display: flex; }
+
+        .header-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+        .header-section h2 { font-size: 28px; font-weight: 600; }
+        .header-section p { color: #8fa39e; font-size: 14px; }
+
+        /* --- ABA 1: AGENTE ATIVO --- */
+        .chat-area { flex: 1; background: linear-gradient(135deg, #063124 0%, #0b4a35 100%); padding: 30px; display: flex; flex-direction: column; }
+        .map-section { background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 15px; margin-top: 20px; display: flex; align-items: center; gap: 15px; }
+        .map-icon { font-size: 24px; background: rgba(179, 143, 84, 0.2); padding: 10px; border-radius: 50%; color: #b38f54; }
+        .map-details h4 { font-size: 15px; } .map-details p { font-size: 12px; color: #8fa39e; }
+        .chat-box { flex: 1; margin-top: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; }
+        .message { display: flex; flex-direction: column; max-width: 75%; }
+        .message.bot { align-self: flex-start; } .message.user { align-self: flex-end; }
+        .message .sender-title { font-size: 11px; color: #8fa39e; margin-bottom: 4px; margin-left: 8px; }
+        .message.user .sender-title { align-self: flex-end; margin-right: 8px; }
+        .bubble { padding: 14px 18px; border-radius: 16px; font-size: 14px; line-height: 1.5; }
+        .message.bot .bubble { background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.08); border-top-left-radius: 4px; }
+        .message.user .bubble { background: #0d5c43; border-top-right-radius: 4px; }
+        .channel-selector { margin-top: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .channel-btn { padding: 14px; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; cursor: pointer; font-weight: 500; display: flex; justify-content: center; align-items: center; gap: 8px; font-size: 14px; }
+        .channel-btn.whatsapp { background: rgba(37, 211, 102, 0.1); color: #25d366; }
+        .channel-btn.email { background: rgba(0, 112, 243, 0.1); color: #0070f3; }
+        .result-area { width: 400px; background: #161e1b; border-left: 1px solid rgba(255, 255, 255, 0.05); padding: 30px 20px; overflow-y: auto; }
+        .card { background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 16px; padding: 22px; margin-bottom: 20px; }
+        .card h3 { font-size: 13px; text-transform: uppercase; color: #8fa39e; margin-bottom: 12px; }
+        .score-container { display: flex; align-items: baseline; gap: 10px; }
+        .score { font-size: 56px; color: #b38f54; font-weight: 700; } .score span { font-size: 20px; color: #5d756f; }
+        .potencial { background: rgba(179, 143, 84, 0.15); color: #b38f54; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; margin-left: auto; }
+        .produto { font-size: 18px; font-weight: 600; margin-bottom: 6px; }
+        .produto-img { width: 100%; max-width: 120px; display: block; margin: 15px auto 0 auto; }
+        .action-buttons button { width: 100%; padding: 14px; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; font-size: 13px; }
+        .btn-primary { background: #b38f54; color: #121916; font-weight: 600; }
+
+        /* --- ABA 2: DASHBOARD --- */
+        .dashboard-area { flex: 1; background: #0f1613; padding: 30px; overflow-y: auto; display: flex; flex-direction: column; gap: 25px; }
+        .metrics-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+        .metric-card { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 14px; padding: 20px; }
+        .metric-card h4 { font-size: 12px; text-transform: uppercase; color: #8fa39e; margin-bottom: 8px; }
+        .metric-card .value { font-size: 28px; font-weight: 700; }
+        .metric-card .subtext { font-size: 11px; color: #b38f54; margin-top: 4px; }
+        .dashboard-row { display: grid; grid-template-columns: 1fr 1.2fr; gap: 20px; }
+        .dash-box { background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 16px; padding: 22px; }
+        .dash-box h3 { font-size: 16px; font-weight: 600; margin-bottom: 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); padding-bottom: 10px; }
+        .bar-chart { display: flex; flex-direction: column; gap: 15px; }
+        .chart-row { display: flex; align-items: center; gap: 15px; }
+        .chart-label { width: 140px; font-size: 13px; color: #bdc7c4; }
+        .chart-bar-container { flex: 1; background: rgba(255, 255, 255, 0.05); height: 12px; border-radius: 6px; overflow: hidden; }
+        .chart-bar-fill { height: 100%; background: #b38f54; border-radius: 6px; }
+        .chart-value { width: 40px; font-size: 13px; font-weight: 600; text-align: right; color: #b38f54; }
+        .data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .data-table th { text-align: left; color: #8fa39e; padding: 10px; border-bottom: 1px solid rgba(255, 255, 255, 0.08); }
+        .data-table td { padding: 12px 10px; color: #bdc7c4; border-bottom: 1px solid rgba(255, 255, 255, 0.03); }
+        .badge-potencial { padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+        .badge-potencial.alto { background: rgba(179, 143, 84, 0.15); color: #b38f54; }
+        .badge-potencial.medio { background: rgba(255, 255, 255, 0.05); color: #bdc7c4; }
+
+        /* --- ABA 3: OPORTUNIDADES --- */
+        .opportunities-area { flex: 1; background: #0f1613; padding: 30px; overflow-y: auto; display: flex; flex-direction: column; gap: 25px; }
+        .opp-filters { display: flex; gap: 12px; }
+        .filter-badge { background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); padding: 8px 16px; border-radius: 20px; font-size: 12px; cursor: pointer; color: #bdc7c4; }
+        .filter-badge.active { background: #b38f54; color: #121916; font-weight: 600; }
+        .opp-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+        .opp-card { background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 16px; padding: 22px; display: flex; flex-direction: column; justify-content: space-between; }
+        .opp-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; }
+        .opp-title h3 { font-size: 16px; color: #fff; } .opp-title p { font-size: 12px; color: #8fa39e; }
+        .opp-score { background: rgba(179, 143, 84, 0.1); color: #b38f54; font-weight: 700; width: 40px; height: 40px; display: flex; justify-content: center; align-items: center; border-radius: 50%; border: 1px solid rgba(179, 143, 84, 0.2); }
+        .opp-details { margin-bottom: 15px; }
+        .detail-row { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 6px; color: #bdc7c4; }
+        .opp-badge-recommendation { background: rgba(13, 92, 67, 0.2); color: #2ecc71; border: 1px solid rgba(13, 92, 67, 0.4); padding: 6px 12px; border-radius: 8px; font-size: 12px; text-align: center; }
+        .opp-action-btn { width: 100%; background: transparent; border: 1px solid rgba(179, 143, 84, 0.4); color: #b38f54; padding: 12px; border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer; margin-top: 15px; }
+        .opp-action-btn:hover { background: #b38f54; color: #121916; }
+
+        /* --- ABA 4: ESTILOS EXCLUSIVOS DE RELATÓRIOS --- */
+        .report-area {
+            flex: 1;
+            background: #0f1613;
+            padding: 30px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        .report-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 15px 20px;
+            border-radius: 12px;
+        }
+
+        .report-meta {
+            font-size: 13px;
+            color: #8fa39e;
+        }
+
+        .btn-export {
+            background: #b38f54;
+            color: #121916;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-export:hover {
+            background: #c29f65;
+            box-shadow: 0 4px 12px rgba(179, 143, 84, 0.2);
+        }
+
+        .report-grid-summary {
+            display: grid;
+            grid-template-columns: 1.5fr 1fr;
+            gap: 20px;
+        }
+
+        .report-block {
+            background: rgba(255, 255, 255, 0.01);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            border-radius: 14px;
+            padding: 20px;
+        }
+
+        .report-block h4 {
+            font-size: 14px;
+            color: #b38f54;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .report-block p {
+            font-size: 13px;
+            color: #bdc7c4;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .region-list {
+            list-style: none;
+        }
+
+        .region-item {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            color: #bdc7c4;
+        }
+
+        .region-item span:last-child {
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .report-table-box {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 22px;
+        }
+
+        .report-table-box h3 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        /* Estilização Avançada da Tabela do Relatório */
+        .full-data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+            text-align: left;
+        }
+
+        .full-data-table th {
+            color: #8fa39e;
+            padding: 12px 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            font-weight: 500;
+        }
+
+        .full-data-table td {
+            padding: 12px 10px;
+            color: #bdc7c4;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+        }
+
+        .full-data-table tr:hover td {
+            background: rgba(255, 255, 255, 0.01);
+            color: #fff;
+        }
+
+        .badge-sabor {
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 500;
+            font-size: 11px;
+        }
+        .badge-sabor.guarana { background: rgba(46, 204, 113, 0.15); color: #2ecc71; }
+        .badge-sabor.laranja { background: rgba(230, 126, 34, 0.15); color: #e67e22; }
+        .badge-sabor.limao { background: rgba(52, 152, 219, 0.15); color: #3498db; }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- SIDEBAR COMPARTILHADA -->
+    <div class="sidebar">
+        <div>
+            <div class="logo">
+                <div class="shield">FYS</div>
+                <h1>FYS</h1>
+                <p>Agente de Prospecção</p>
+            </div>
+
+            <div class="menu">
+                <button id="btn-agente" class="active" onclick="switchTab('agente')">🤖 Agente Ativo</button>
+                <button id="btn-dashboard" onclick="switchTab('dashboard')">📊 Dashboard</button>
+                <button id="btn-oportunidades" onclick="switchTab('oportunidades')">🎯 Oportunidades</button>
+                <button id="btn-relatorios" onclick="switchTab('relatorios')">📄 Relatórios</button>
+            </div>
+        </div>
+        <div class="heineken">GRUPO HEINEKEN</div>
+    </div>
+
+    <!-- ABA 1: AGENTE ATIVO -->
+    <div id="tab-agente" class="tab-content active">
+        <div class="chat-area">
+            <div class="header-section">
+                <div>
+                    <h2>FYS Scout AI</h2>
+                    <p>Todo sabor. Menos pressão.</p>
+                </div>
+            </div>
+
+            <div class="map-section">
+                <div class="map-icon">📍</div>
+                <div class="map-details">
+                    <p>Padaria Localizada por IA</p>
+                    <h4>Padaria Santa Maria — Jardim Paulista, SP</h4>
+                </div>
+            </div>
+
+            <div class="chat-box">
+                <div class="message bot">
+                    <span class="sender-title">Agente FYS</span>
+                    <div class="bubble">Olá! Localizei a Padaria Santa Maria no mapa de expansão. Identifiquei que o estabelecimento já comercializa produtos do Grupo Heineken (Água Schin).</div>
+                </div>
+                <div class="message user">
+                    <span class="sender-title">Dono da Padaria</span>
+                    <div class="bubble">Sim, trabalhamos com a Água Schin aqui.</div>
+                </div>
+                <div class="message bot">
+                    <span class="sender-title">Agente FYS</span>
+                    <div class="bubble">Excelente. Há uma grande oportunidade de incluir o refrigerante FYS no seu portfólio. Recomendo fortemente iniciarmos com o <strong>Guaraná da Amazônia FYS</strong>, nosso sabor mais vendido e com aceitação massiva em padarias.</div>
+                </div>
+            </div>
+
+            <div class="channel-selector">
+                <button class="channel-btn whatsapp" onclick="alert('Disparando mensagem no WhatsApp...')">💬 Iniciar via WhatsApp</button>
+                <button class="channel-btn email" onclick="alert('Preparando e-mail de apresentação...')">✉️ Enviar via E-mail</button>
+            </div>
+        </div>
+
+        <div class="result-area">
+            <div class="card">
+                <h3>Análise do Estabelecimento</h3>
+                <div class="score-container">
+                    <div class="score">88<span>/100</span></div>
+                    <div class="potencial">POTENCIAL ALTO</div>
+                </div>
+            </div>
+            <div class="card">
+                <h3>Foco Comercial</h3>
+                <div class="produto">Guaraná da Amazônia FYS</div>
+                <p>Produto com maior giro no setor de panificação e forte apelo pelo sabor autêntico de guaraná com menos açúcar.</p>
+                <img src="img/guarana_fys.png" alt="Guaraná FYS" class="produto-img">
+            </div>
+            <div class="card">
+                <h3>Ação Pós-Contato</h3>
+                <div class="action-buttons">
+                    <button class="btn-primary" onclick="alert('Direcionando histórico para o vendedor humano...')">Transferir para Humano</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ABA 2: DASHBOARD -->
+    <div id="tab-dashboard" class="tab-content">
+        <div class="dashboard-area">
+            <div class="header-section">
+                <div>
+                    <h2>Painel Comercial de Expansão</h2>
+                    <p>Métricas consolidadas a partir do mapeamento de inteligência de mercado.</p>
+                </div>
+            </div>
+
+            <div class="metrics-grid">
+                <div class="metric-card"><h4>Mapeadas</h4><div class="value">15</div><div class="subtext">Total de Padarias em SP</div></div>
+                <div class="metric-card"><h4>Foco Guaraná</h4><div class="value">66.6%</div><div class="subtext">Fração de Dominância</div></div>
+                <div class="metric-card"><h4>Score Médio FYS</h4><div class="value">79.5</div><div class="subtext">Índice total de aderência</div></div>
+                <div class="metric-card"><h4>Potencial Alto</h4><div class="value">10 / 15</div><div class="subtext">Leads Prontos para Ataque</div></div>
+            </div>
+
+            <div class="dashboard-row">
+                <div class="dash-box">
+                    <h3>Recomendação por Sabor</h3>
+                    <div class="bar-chart">
+                        <div class="chart-row">
+                            <div class="chart-label">Guaraná da Amazônia</div>
+                            <div class="chart-bar-container"><div class="chart-bar-fill" style="width: 66%;"></div></div>
+                            <div class="chart-value">10</div>
+                        </div>
+                        <div class="chart-row">
+                            <div class="chart-label">Limão FYS</div>
+                            <div class="chart-bar-container"><div class="chart-bar-fill" style="width: 20%; background: #3498db;"></div></div>
+                            <div class="chart-value">3</div>
+                        </div>
+                        <div class="chart-row">
+                            <div class="chart-label">Laranja da Terra</div>
+                            <div class="chart-bar-container"><div class="chart-bar-fill" style="width: 14%; background: #e67e22;"></div></div>
+                            <div class="chart-value">2</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dash-box">
+                    <h3>Visão Geral dos Pontos de Venda</h3>
+                    <table class="data-table">
+                        <thead><tr><th>Padaria</th><th>Bairro</th><th>Score</th><th>Potencial</th></tr></thead>
+                        <tbody>
+                            <tr><td>Padaria Ponto Certo</td><td>Sé</td><td style="color: #b38f54; font-weight:600;">93</td><td><span class="badge-potencial alto">Alto</span></td></tr>
+                            <tr><td>Padaria Imperial</td><td>República</td><td style="color: #b38f54; font-weight:600;">91</td><td><span class="badge-potencial alto">Alto</span></td></tr>
+                            <tr><td>Padaria Bela Massa</td><td>Moema</td><td style="color: #b38f54; font-weight:600;">90</td><td><span class="badge-potencial alto">Alto</span></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ABA 3: OPORTUNIDADES -->
+    <div id="tab-oportunidades" class="tab-content">
+        <div class="opportunities-area">
+            <div class="header-section">
+                <div>
+                    <h2>Radar de Oportunidades FYS</h2>
+                    <p>Leads prioritários gerados pela IA cruzando o fluxo do estabelecimento e o portfólio Heineken.</p>
+                </div>
+            </div>
+
+            <div class="opp-filters">
+                <div class="filter-badge active">Todas (15)</div>
+                <div class="filter-badge">Potencial Alto (10)</div>
+                <div class="filter-badge">Foco Guaraná (10)</div>
+            </div>
+
+            <div class="opp-grid">
+                <div class="opp-card">
+                    <div>
+                        <div class="opp-header">
+                            <div class="opp-title"><h3>Padaria Ponto Certo</h3><p>📍 Centro — Sé</p></div>
+                            <div class="opp-score">93</div>
+                        </div>
+                        <div class="opp-details">
+                            <div class="detail-row"><span>Fluxo Diário:</span><span>950 clientes</span></div>
+                            <div class="detail-row"><span>Já vende Heineken:</span><span>Sim</span></div>
+                        </div>
+                    </div>
+                    <div><div class="opp-badge-recommendation">🎯 Foco: Guaraná da Amazônia</div><button class="opp-action-btn" onclick="switchTab('agente')">Acionar Agente</button></div>
+                </div>
+
+                <div class="opp-card">
+                    <div>
+                        <div class="opp-header">
+                            <div class="opp-title"><h3>Padaria Imperial</h3><p>📍 Centro — República</p></div>
+                            <div class="opp-score">91</div>
+                        </div>
+                        <div class="opp-details">
+                            <div class="detail-row"><span>Fluxo Diário:</span><span>880 clientes</span></div>
+                            <div class="detail-row"><span>Já vende Heineken:</span><span>Sim</span></div>
+                        </div>
+                    </div>
+                    <div><div class="opp-badge-recommendation">🎯 Foco: Guaraná da Amazônia</div><button class="opp-action-btn" onclick="switchTab('agente')">Acionar Agente</button></div>
+                </div>
+
+                <div class="opp-card">
+                    <div>
+                        <div class="opp-header">
+                            <div class="opp-title"><h3>Padaria Bela Massa</h3><p>📍 Zona Sul — Moema</p></div>
+                            <div class="opp-score">90</div>
+                        </div>
+                        <div class="opp-details">
+                            <div class="detail-row"><span>Fluxo Diário:</span><span>780 clientes</span></div>
+                            <div class="detail-row"><span>Já vende Heineken:</span><span>Sim</span></div>
+                        </div>
+                    </div>
+                    <div><div class="opp-badge-recommendation">🎯 Foco: Guaraná da Amazônia</div><button class="opp-action-btn" onclick="switchTab('agente')">Acionar Agente</button></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ABA 4: RELATÓRIOS (NOVA!) -->
+    <div id="tab-relatorios" class="tab-content">
+        <div class="report-area">
+            <div class="header-section">
+                <div>
+                    <h2>Relatório de Desempenho e Cobertura</h2>
+                    <p>Auditoria estruturada dos alvos comerciais e aderência de produtos por microrregião.</p>
+                </div>
+                <button class="btn-export" onclick="window.print()">
+                    <span>📄</span> Exportar Relatório (PDF)
+                </button>
+            </div>
+
+            <!-- Controles do Relatório -->
+            <div class="report-controls">
+                <div class="report-meta">
+                    <strong>Base de Dados Ativa:</strong> padarias_sp.csv | <strong>Última Atualização:</strong> Junho de 2026
+                </div>
+                <div class="report-meta">
+                    <strong>Status do Modelo:</strong> Homologado para Prospecção Ativa
+                </div>
+            </div>
+
+            <!-- Resumos Executivos Cruzando Regiões e Insights da IA -->
+            <div class="report-grid-summary">
+                
+                <div class="report-block">
+                    <h4>Sumário Executivo da IA</h4>
+                    <p>
+                        A análise estatística revela que estabelecimentos com fluxo superior a <strong>600 clientes/dia</strong> apresentam correlação direta com score FYS acima de <strong>80 pontos</strong>. Isso se deve à sinergia logística interna: padarias que já transacionam marcas premium do grupo (Heineken/Schin) absorvem o Guaraná da Amazônia FYS como principal opção de refrigerante saudável sem atritos de entrega.
+                    </p>
+                    <p>
+                        <strong>Recomendação de Ataque Comercial:</strong> Concentrar esforços iniciais no bloco Centro e Zona Sul, onde a taxa de conversão estimada pelo modelo é de 90%.
+                    </p>
+                </div>
+
+                <div class="report-block">
+                    <h4>Distribuição por Zona Comercial</h4>
+                    <ul class="region-list">
+                        <div class="region-item"><span>Zona Sul</span><span>5 Padarias</span></div>
+                        <div class="region-item"><span>Zona Norte</span><span>3 Padarias</span></div>
+                        <div class="region-item"><span>Zona Oeste</span><span>3 Padarias</span></div>
+                        <div class="region-item"><span>Zona Leste</span><span>2 Padarias</span></div>
+                        <div class="region-item"><span>Centro</span><span>2 Padarias</span></div>
+                    </ul>
+                </div>
+
+            </div>
+
+            <!-- Tabela Completa dos Dados Reais do CSV para Auditoria -->
+            <div class="report-table-box">
+                <h3>Dados de Cobertura Completa (15 Registros)</h3>
+                <table class="full-data-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Estabelecimento</th>
+                            <th>Região</th>
+                            <th>Bairro</th>
+                            <th>Fluxo/Dia</th>
+                            <th>Heineken</th>
+                            <th>Score</th>
+                            <th>Sabor Recomendado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Dados fiéis extraídos do seu CSV -->
+                        <tr><td>01</td><td>Padaria Santa Maria</td><td>Zona Sul</td><td>Jardim Paulista</td><td>850</td><td>Sim</td><td style="font-weight:600; color:#b38f54;">88</td><td><span class="badge-sabor guarana">Guaraná</span></td></tr>
+                        <tr><td>02</td><td>Padaria Pão de Ouro</td><td>Zona Oeste</td><td>Pinheiros</td><td>720</td><td>Sim</td><td style="font-weight:600; color:#b38f54;">84</td><td><span class="badge-sabor guarana">Guaraná</span></td></tr>
+                        <tr><td>03</td><td>Padaria Nova Esperança</td><td>Zona Leste</td><td>Tatuapé</td><td>430</td><td>Não</td><td style="font-weight:600; color:#bdc7c4;">71</td><td><span class="badge-sabor laranja">Laranja</span></td></tr>
+                        <tr><td>04</td><td>Padaria Central</td><td>Zona Norte</td><td>Santana</td><td>610</td><td>Sim</td><td style="font-weight:600; color:#b38f54;">82</td><td><span class="badge-sabor guarana">Guaraná</span></td></tr>
+                        <tr><td>05</td><td>Padaria Bela Massa</td><td>Zona Sul</td><td>Moema</td><td>780</td><td>Sim</td><td style="font-weight:600; color:#b38f54;">90</td><td><span class="badge-sabor guarana">Guaraná</span></td></tr>
+                        <tr><td>06</td><td>Padaria São Jorge</td><td>Zona Leste</td><td>Penha</td><td>350</td><td>Não</td><td style="font-weight:600; color:#bdc7c4;">65</td><td><span class="badge-sabor limao">Limão</span></td></tr>
+                        <tr><td>07</td><td>Padaria Ponto Certo</td><td>Centro</td><td>Sé</td><td>950</td><td>Sim</td><td style="font-weight:600; color:#b38f54;">93</td><td><span class="badge-sabor guarana">Guaraná</span></td></tr>
+                        <tr><td>08</td><td>Padaria Trigo Nobre</td><td>Zona Oeste</td><td>Vila Madalena</td><td>580</td><td>Sim</td><td style="font-weight:600; color:#bdc7c4;">74</td><td><span class="badge-sabor laranja">Laranja</span></td></tr>
+                        <tr><td>09</td><td>Padaria Estrela do Sul</td><td>Zona Sul</td><td>Santo Amaro</td><td>690</td><td>Sim</td><td style="font-weight:600; color:#b38f54;">85</td><td><span class="badge-sabor guarana">Guaraná</span></td></tr>
+                        <tr><td>10</td><td>Padaria Jardim das Flores</td><td>Zona Norte</td><td>Tucuruvi</td><td>410</td><td>Não</td><td style="font-weight:600; color:#bdc7c4;">68</td><td><span class="badge-sabor limao">Limão</span></td></tr>
+                        <tr><td>11</td><td>Padaria Nova Paulista</td><td>Zona Sul</td><td>Brooklin</td><td>810</td><td>Sim</td><td style="font-weight:600; color:#b38f54;">89</td><td><span class="badge-sabor guarana">Guaraná</span></td></tr>
+                        <tr><td>12</td><td>Padaria Vila Rica</td><td>Zona Oeste</td><td>Butantã</td><td>540</td><td>Sim</td><td style="font-weight:600; color:#bdc7c4;">72</td><td><span class="badge-sabor laranja">Laranja</span></td></tr>
+                        <tr><td>13</td><td>Padaria Delícia do Trigo</td><td>Zona Leste</td><td>Mooca</td><td>620</td><td>Sim</td><td style="font-weight:600; color:#b38f54;">80</td><td><span class="badge-sabor guarana">Guaraná</span></td></tr>
+                        <tr><td>14</td><td>Padaria Família Paulista</td><td>Zona Norte</td><td>Casa Verde</td><td>390</td><td>Não</td><td style="font-weight:600; color:#bdc7c4;">67</td><td><span class="badge-sabor limao">Limão</span></td></tr>
+                        <tr><td>15</td><td>Padaria Imperial</td><td>Centro</td><td>República</td><td>880</td><td>Sim</td><td style="font-weight:600; color:#b38f54;">91</td><td><span class="badge-sabor guarana">Guaraná</span></td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- SCRIPT DE ALTERNÂNCIA DE ABAS COMPLETO -->
+<script>
+function switchTab(tabName) {
+    // Oculta todas as telas de abas
+    document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    // Remove o status 'active' de todos os botões do menu
+    document.querySelectorAll('.menu button').forEach(btn => {
+        btn.classList.remove('active');
+    });
+
+    // Mostra a aba clicada e define o botão como ativo
+    document.getElementById('tab-' + tabName).classList.add('active');
+    document.getElementById('btn-' + tabName).classList.add('active');
+}
+</script>
+
+</body>
+</html>

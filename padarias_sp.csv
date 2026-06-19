@@ -1,0 +1,16 @@
+id,nome,regiao,bairro,fluxo_clientes,vende_heineken,vende_schin,vende_refrigerante,potencial_fys,score_fys,produto_recomendado
+1,Padaria Santa Maria,Zona Sul,Jardim Paulista,850,Sim,Sim,Sim,Alto,88,Guaraná da Amazônia
+2,Padaria Pão de Ouro,Zona Oeste,Pinheiros,720,Sim,Não,Sim,Alto,84,Guaraná da Amazônia
+3,Padaria Nova Esperança,Zona Leste,Tatuapé,430,Não,Não,Sim,Médio,71,Laranja da Terra
+4,Padaria Central,Zona Norte,Santana,610,Sim,Sim,Sim,Alto,82,Guaraná da Amazônia
+5,Padaria Bela Massa,Zona Sul,Moema,780,Sim,Sim,Sim,Alto,90,Guaraná da Amazônia
+6,Padaria São Jorge,Zona Leste,Penha,350,Não,Não,Sim,Médio,65,Limão FYS
+7,Padaria Ponto Certo,Centro,Sé,950,Sim,Sim,Sim,Alto,93,Guaraná da Amazônia
+8,Padaria Trigo Nobre,Zona Oeste,Vila Madalena,580,Sim,Não,Sim,Médio,74,Laranja da Terra
+9,Padaria Estrela do Sul,Zona Sul,Santo Amaro,690,Sim,Sim,Sim,Alto,85,Guaraná da Amazônia
+10,Padaria Jardim das Flores,Zona Norte,Tucuruvi,410,Não,Não,Sim,Médio,68,Limão FYS
+11,Padaria Nova Paulista,Zona Sul,Brooklin,810,Sim,Sim,Sim,Alto,89,Guaraná da Amazônia
+12,Padaria Vila Rica,Zona Oeste,Butantã,540,Sim,Não,Sim,Médio,72,Laranja da Terra
+13,Padaria Delícia do Trigo,Zona Leste,Mooca,620,Sim,Sim,Sim,Alto,80,Guaraná da Amazônia
+14,Padaria Família Paulista,Zona Norte,Casa Verde,390,Não,Não,Sim,Médio,67,Limão FYS
+15,Padaria Imperial,Centro,República,880,Sim,Sim,Sim,Alto,91,Guaraná da Amazônia
